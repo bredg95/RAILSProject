@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="TrainGUIRegular.jnlp">
+  <information>
+    <title>TrainGUIRegular</title>
+    <vendor>Matt</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" java-vm-args="-Djava.library.path=libs\extra-libs\native\Windows\i386-mingw64 "  href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="TrainGUIRegular.jar" size="467500" download="eager" />
+    <jar href="lib\rxtx-2.1.7.jar" size="59464" download="eager" />
+    <jar href="lib\slf4j-api-1.7.7.jar" size="29257" download="eager" />
+    <jar href="lib\slf4j-nop-1.7.7.jar" size="4090" download="eager" />
+    <jar href="lib\xbjlib-1.0.0.jar" size="206392" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="TrainGUIRegular" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="my.trainguiregular.TrainGUIRegular"  name="TrainGUIRegular" />
+  <update check="always"/>
+</jnlp>
