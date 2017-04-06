@@ -138,6 +138,7 @@
           <Properties>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
+            <Property name="name" type="java.lang.String" value="consoleOutput" noResource="true"/>
           </Properties>
         </Component>
       </SubComponents>

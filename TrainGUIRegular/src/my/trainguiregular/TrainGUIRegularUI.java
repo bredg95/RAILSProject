@@ -1,6 +1,8 @@
 
 package my.trainguiregular;
 
+import javax.swing.*;
+
 /**
  *
  * @author Matt
@@ -11,6 +13,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
      * Creates new form TrainGUIRegularUI
      */
     public TrainGUIRegularUI() {
+        instance = this;
         initComponents();
     }
 
@@ -64,6 +67,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
+        jTextArea1.setName("consoleOutput"); // NOI18N
         jScrollPane2.setViewportView(jTextArea1);
 
         jSlider1.setMajorTickSpacing(1);
@@ -211,6 +215,15 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 new TrainGUIRegularUI().setVisible(true);
             }
         });
+    }
+    
+    public static TrainGUIRegularUI getInstance() {
+        return instance;
+    }
+    private static TrainGUIRegularUI instance;
+    
+    public final void appendToConsole(String output) {
+        jTextArea1.append(output);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
