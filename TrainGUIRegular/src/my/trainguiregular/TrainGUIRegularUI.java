@@ -8,6 +8,8 @@ import com.digi.xbee.api.packet.common.*;
 import javax.swing.*;
 import java.util.HashMap;
 import javax.swing.text.DefaultCaret;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  *
@@ -21,11 +23,20 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         
         private final HashMap <String, String> addressMap = new HashMap<String, String>();
         
-        public final XBeeDevice myDevice = new XBeeDevice(PORT, BAUD_RATE);
+        public XBeeDevice myDevice = null;
     /**
      * Creates new form TrainGUIRegularUI
      */
     public TrainGUIRegularUI() {
+        initComponents();
+        setConnection(PORT, BAUD_RATE);
+        DefaultCaret caret = (DefaultCaret) consoleOutput.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        this.setTitle("RAILS Command Post");
+    }
+    
+    public void setConnection(String port, int baud) {
+        myDevice = new XBeeDevice(port, baud);
         XBeeDataListener listener = new XBeeDataListener();
         listener.setGUIInstance(this);
         addressMap.put("Train 1", "13A2004105EE5A");
@@ -36,12 +47,16 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 myDevice.addDataListener(listener);
 
         } catch (XBeeException e) {
-                e.printStackTrace();
+                consoleOutput.append(e.getMessage() + "\n");
         }
-        initComponents();
-        DefaultCaret caret = (DefaultCaret) consoleOutput.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        this.setTitle("RAILS Command Post");
+        
+        this.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                if(myDevice.isOpen())
+                    myDevice.close();
+                System.exit(0);
+            }
+        });
     }
 
     /**
@@ -67,6 +82,9 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        setConnMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(204, 204, 204));
@@ -138,6 +156,20 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             }
         });
 
+        jMenu1.setText("File");
+
+        setConnMenuItem.setText("Set Connection");
+        setConnMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                setConnMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(setConnMenuItem);
+
+        jMenuBar1.add(jMenu1);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -200,6 +232,10 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             consoleOutput.append("Must select a train.\n");
             return;
         }
+        if(!myDevice.isOpen()) {
+            consoleOutput.append("No connection available.");
+            return;
+        }
         XBee64BitAddress dest64 = new XBee64BitAddress(hexStringToByteArray(addressMap.get(trainList.getSelectedValue())));
         // Should be set to this default
         XBee16BitAddress dest16 = new XBee16BitAddress(hexStringToByteArray("FFFE"));
@@ -246,6 +282,33 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }//GEN-LAST:event_sendButtonActionPerformed
+
+    private void setConnMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setConnMenuItemActionPerformed
+        // TODO add your handling code here:
+        JTextField port = new JTextField();
+        JTextField baudRate = new JTextField();
+        final JComponent[] inputs = new JComponent[] {
+                new JLabel("Port"),
+                port,
+                new JLabel("Baud Rate"),
+                baudRate
+        };
+        int result = JOptionPane.showConfirmDialog(null, inputs, "Set Connection", JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            String portVal = port.getText();
+            int baudVal = 0;
+            try {
+                baudVal = Integer.parseInt(baudRate.getText());
+            }
+            catch(NumberFormatException e) {
+                consoleOutput.append("Invalid format for baud rate.\n");
+                return;
+            }
+            setConnection(portVal, baudVal);
+        } else {
+            System.out.println("User canceled / closed the dialog, result = " + result);
+        }
+    }//GEN-LAST:event_setConnMenuItemActionPerformed
 
     public static byte[] hexStringToByteArray(String s) {
     int len = s.length();
@@ -309,11 +372,14 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JRadioButton reverseRadioButton;
     private javax.swing.JButton sendButton;
+    private javax.swing.JMenuItem setConnMenuItem;
     private javax.swing.JSlider speedSlider;
     private javax.swing.JList<String> trainList;
     // End of variables declaration//GEN-END:variables
