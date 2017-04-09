@@ -1,20 +1,47 @@
 
 package my.trainguiregular;
 
+import com.digi.xbee.api.XBeeDevice;
+import com.digi.xbee.api.exceptions.XBeeException;
+import com.digi.xbee.api.models.*;
+import com.digi.xbee.api.packet.common.*;
 import javax.swing.*;
+import java.util.HashMap;
+import javax.swing.text.DefaultCaret;
 
 /**
  *
  * @author Matt
  */
 public class TrainGUIRegularUI extends javax.swing.JFrame {
-
+    // TODO Replace with the serial port where your receiver module is connected.
+	private static final String PORT = "COM3";
+	// TODO Replace with the baud rate of you receiver module.
+	private static final int BAUD_RATE = 9600;
+        
+        private final HashMap <String, String> addressMap = new HashMap<String, String>();
+        
+        public final XBeeDevice myDevice = new XBeeDevice(PORT, BAUD_RATE);
     /**
      * Creates new form TrainGUIRegularUI
      */
     public TrainGUIRegularUI() {
-        instance = this;
+        XBeeDataListener listener = new XBeeDataListener();
+        listener.setGUIInstance(this);
+        addressMap.put("Train 1", "13A2004105EE5A");
+        addressMap.put("Train 2", "13A200415B7AE5");
+        try {
+                myDevice.open();
+
+                myDevice.addDataListener(listener);
+
+        } catch (XBeeException e) {
+                e.printStackTrace();
+        }
         initComponents();
+        DefaultCaret caret = (DefaultCaret) consoleOutput.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        this.setTitle("RAILS Command Post");
     }
 
     /**
@@ -30,15 +57,16 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jSlider1 = new javax.swing.JSlider();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
+        consoleOutput = new javax.swing.JTextArea();
+        speedSlider = new javax.swing.JSlider();
+        forwardRadioButton = new javax.swing.JRadioButton();
+        brakeRadioButton = new javax.swing.JRadioButton();
+        reverseRadioButton = new javax.swing.JRadioButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        trainList = new javax.swing.JList<>();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        sendButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(204, 204, 204));
@@ -65,58 +93,50 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setName("consoleOutput"); // NOI18N
-        jScrollPane2.setViewportView(jTextArea1);
+        consoleOutput.setColumns(20);
+        consoleOutput.setRows(5);
+        consoleOutput.setName("consoleOutput"); // NOI18N
+        jScrollPane2.setViewportView(consoleOutput);
 
-        jSlider1.setMajorTickSpacing(1);
-        jSlider1.setMaximum(6);
-        jSlider1.setMinorTickSpacing(1);
-        jSlider1.setOrientation(javax.swing.JSlider.VERTICAL);
-        jSlider1.setPaintLabels(true);
-        jSlider1.setPaintTicks(true);
-        jSlider1.setSnapToTicks(true);
-        jSlider1.setValue(0);
+        speedSlider.setMajorTickSpacing(1);
+        speedSlider.setMaximum(4);
+        speedSlider.setMinorTickSpacing(1);
+        speedSlider.setOrientation(javax.swing.JSlider.VERTICAL);
+        speedSlider.setPaintLabels(true);
+        speedSlider.setPaintTicks(true);
+        speedSlider.setSnapToTicks(true);
+        speedSlider.setValue(0);
 
-        buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setText("Forward");
+        buttonGroup1.add(forwardRadioButton);
+        forwardRadioButton.setText("Forward");
 
-        buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setSelected(true);
-        jRadioButton2.setText("Brake");
-        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton2ActionPerformed(evt);
-            }
-        });
+        buttonGroup1.add(brakeRadioButton);
+        brakeRadioButton.setSelected(true);
+        brakeRadioButton.setText("Brake");
 
-        buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText("Reverse");
-        jRadioButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton3ActionPerformed(evt);
-            }
-        });
+        buttonGroup1.add(reverseRadioButton);
+        reverseRadioButton.setText("Reverse");
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+        trainList.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Train 1", "Train 2" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(trainList);
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/plus.png"))); // NOI18N
         jButton1.setMaximumSize(new java.awt.Dimension(669, 669));
         jButton1.setMinimumSize(new java.awt.Dimension(669, 669));
         jButton1.setPreferredSize(new java.awt.Dimension(669, 669));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/blue.png"))); // NOI18N
+
+        sendButton.setText("Send");
+        sendButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -131,16 +151,17 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jRadioButton1)
-                            .addComponent(jRadioButton2)
-                            .addComponent(jRadioButton3))
+                            .addComponent(forwardRadioButton)
+                            .addComponent(brakeRadioButton)
+                            .addComponent(reverseRadioButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(speedSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sendButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -157,31 +178,85 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
-                    .addComponent(jSlider1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(speedSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(forwardRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jRadioButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(brakeRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jRadioButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(reverseRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(sendButton)))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton2ActionPerformed
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
+        // Edit this in regards to train direction
+        if(trainList.getSelectedIndex() < 0) {
+            consoleOutput.append("Must select a train.\n");
+            return;
+        }
+        XBee64BitAddress dest64 = new XBee64BitAddress(hexStringToByteArray(addressMap.get(trainList.getSelectedValue())));
+        // Should be set to this default
+        XBee16BitAddress dest16 = new XBee16BitAddress(hexStringToByteArray("FFFE"));
+        
+        if(forwardRadioButton.isSelected()) {
+            byte[] data = "F".getBytes();
+            TransmitPacket packet = new TransmitPacket(1, dest64, dest16, 0, 0, data);
+            try {
+                myDevice.sendPacket(packet, new PacketReceiveListener());
+            }
+            catch (XBeeException e) {
+                e.printStackTrace();
+            }
+        }
+        else if(reverseRadioButton.isSelected()) {
+            byte[] data = "R".getBytes();
+            TransmitPacket packet = new TransmitPacket(1, dest64, dest16, 0, 0, data);
+            try {
+                myDevice.sendPacket(packet, new PacketReceiveListener());
+            }
+            catch (XBeeException e) {
+                e.printStackTrace();
+            }
+        }
+        else { // Stop Motor
+            byte[] data = "S".getBytes();
+            TransmitPacket packet = new TransmitPacket(1, dest64, dest16, 0, 0, data);
+            try {
+                myDevice.sendPacket(packet, new PacketReceiveListener());
+            }
+            catch (XBeeException e) {
+                e.printStackTrace();
+            }
+            finally{
+                return;
+            }
+        }
+        byte [] data = Integer.toString(speedSlider.getValue()).getBytes();
+        TransmitPacket packet = new TransmitPacket(1, dest64, dest16, 0, 0, data);
+        try {
+            myDevice.sendPacket(packet, new PacketReceiveListener());
+        }
+        catch (XBeeException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_sendButtonActionPerformed
 
-    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jRadioButton3ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
+    public static byte[] hexStringToByteArray(String s) {
+    int len = s.length();
+    byte[] data = new byte[len / 2];
+    for (int i = 0; i < len; i += 2) {
+        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                             + Character.digit(s.charAt(i+1), 16));
+    }
+    return data;
+}
+    
     /**
      * @param args the command line arguments
      */
@@ -223,22 +298,23 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     private static TrainGUIRegularUI instance;
     
     public final void appendToConsole(String output) {
-        jTextArea1.append(output);
+        consoleOutput.append(output);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton brakeRadioButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JTextArea consoleOutput;
+    private javax.swing.JRadioButton forwardRadioButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSlider jSlider1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JRadioButton reverseRadioButton;
+    private javax.swing.JButton sendButton;
+    private javax.swing.JSlider speedSlider;
+    private javax.swing.JList<String> trainList;
     // End of variables declaration//GEN-END:variables
 }

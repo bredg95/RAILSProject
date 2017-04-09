@@ -19,13 +19,21 @@ public class XBeeDataListener implements IDataReceiveListener {
 	 * (non-Javadoc)
 	 * @see com.digi.xbee.api.listeners.IDataReceiveListener#dataReceived(com.digi.xbee.api.models.XBeeMessage)
 	 */
+         TrainGUIRegularUI gui = null;
+    
 	@Override
 	public final void dataReceived(XBeeMessage xbeeMessage) {
-            TrainGUIRegularUI myBoy = TrainGUIRegularUI.getInstance();
-            myBoy.appendToConsole(String.format("From %s >> %s | %s%n", xbeeMessage.getDevice().get64BitAddress(), 
+            if(gui != null) 
+                gui.appendToConsole(String.format("From %s >> %s | %s%n", xbeeMessage.getDevice().get64BitAddress(), 
 				HexUtils.prettyHexString(HexUtils.byteArrayToHexString(xbeeMessage.getData())), 
 				new String(xbeeMessage.getData())));
 	}
+        /*
+        Gives this listener the instance of the gui so that it can append received data to console
+        */
+        public final void setGUIInstance(TrainGUIRegularUI instance) {
+            gui = instance;
+        }
 }
 
 /**
