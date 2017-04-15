@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" java-vm-args="-Djava.library.path=libs\native\Windows\win64 "  href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="TrainGUIRegular.jar" size="472616" download="eager" />
+    <jar href="TrainGUIRegular.jar" size="472094" download="eager" />
     <jar href="lib\android-sdk-5.1.1.jar" size="26052096" download="eager" />
     <jar href="lib\android-sdk-addon-3.jar" size="93554" download="eager" />
     <jar href="lib\rxtx-2.2.jar" size="60866" download="eager" />
