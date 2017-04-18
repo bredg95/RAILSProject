@@ -58,6 +58,10 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             }
         });
     }
+    
+    public void addTrain(String name, String mac) {
+        addressMap.put(name, mac);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -79,7 +83,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         reverseRadioButton = new javax.swing.JRadioButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         trainList = new javax.swing.JList<>();
-        jButton1 = new javax.swing.JButton();
+        addTrainButton = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -142,10 +146,15 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(trainList);
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/plus.png"))); // NOI18N
-        jButton1.setMaximumSize(new java.awt.Dimension(669, 669));
-        jButton1.setMinimumSize(new java.awt.Dimension(669, 669));
-        jButton1.setPreferredSize(new java.awt.Dimension(669, 669));
+        addTrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/plus.png"))); // NOI18N
+        addTrainButton.setMaximumSize(new java.awt.Dimension(669, 669));
+        addTrainButton.setMinimumSize(new java.awt.Dimension(669, 669));
+        addTrainButton.setPreferredSize(new java.awt.Dimension(669, 669));
+        addTrainButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addTrainButtonActionPerformed(evt);
+            }
+        });
 
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/blue.png"))); // NOI18N
 
@@ -191,7 +200,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sendButton))
                 .addContainerGap())
@@ -202,7 +211,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -310,6 +319,25 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_setConnMenuItemActionPerformed
 
+    private void addTrainButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTrainButtonActionPerformed
+        JTextField name = new JTextField();
+        JTextField mac = new JTextField();
+        final JComponent[] inputs = new JComponent[] {
+                new JLabel("Name"),
+                name,
+                new JLabel("MAC Address"),
+                mac
+        };
+        int result = JOptionPane.showConfirmDialog(null, inputs, "Set Connection", JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            String nameVal = name.getText();
+            String macVal = mac.getText();
+            addTrain(nameVal, macVal);
+        } else {
+            System.out.println("User canceled / closed the dialog, result = " + result);
+        }
+    }//GEN-LAST:event_addTrainButtonActionPerformed
+
     public static byte[] hexStringToByteArray(String s) {
     int len = s.length();
     byte[] data = new byte[len / 2];
@@ -365,11 +393,11 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addTrainButton;
     private javax.swing.JRadioButton brakeRadioButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextArea consoleOutput;
     private javax.swing.JRadioButton forwardRadioButton;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
