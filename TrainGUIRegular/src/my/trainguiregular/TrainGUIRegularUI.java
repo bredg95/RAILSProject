@@ -61,6 +61,8 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     
     public void addTrain(String name, String mac) {
         addressMap.put(name, mac);
+        
+        //((DefaultListModel)trainList.getModel()).insertElementAt(name, 0);
     }
 
     /**

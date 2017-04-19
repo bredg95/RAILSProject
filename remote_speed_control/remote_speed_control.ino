@@ -60,19 +60,19 @@ void listenForData() {
         stopTieCounting = true;
       }
       else if (rcv == 49) { // 1
-        analogWrite(enable_pin, 195);
+        analogWrite(enable_pin, 105);
         stopTieCounting = false;
         tiesToPass = 1;
         tieMsg = "Passed one tie.";
       }
       else if (rcv == 50) { // 2
-        analogWrite(enable_pin, 215);
+        analogWrite(enable_pin, 155);
         stopTieCounting = false;
         tiesToPass = 2;
         tieMsg = "Passed two ties.";
       }
       else if (rcv == 51) { // 3
-        analogWrite(enable_pin, 235);
+        analogWrite(enable_pin, 205);
         stopTieCounting = false;
         tiesToPass = 5;
         tieMsg = "Passed five ties.";
