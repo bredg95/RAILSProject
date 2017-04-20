@@ -10,6 +10,9 @@ import java.util.HashMap;
 import javax.swing.text.DefaultCaret;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -24,6 +27,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         private final HashMap <String, String> addressMap = new HashMap<String, String>();
         
         public XBeeDevice myDevice = null;
+        private DefaultListModel trainListModel = null;
     /**
      * Creates new form TrainGUIRegularUI
      */
@@ -33,6 +37,10 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         DefaultCaret caret = (DefaultCaret) consoleOutput.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         this.setTitle("RAILS Command Post");
+        trainListModel = new DefaultListModel();
+        trainList.setModel(trainListModel);
+        trainListModel.addElement("Train 1");
+        trainListModel.addElement("Train 2");
     }
     
     public void setConnection(String port, int baud) {
@@ -60,9 +68,20 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     }
     
     public void addTrain(String name, String mac) {
+        Iterator it = addressMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            if(name.compareTo((String)pair.getKey()) == 0) {
+                consoleOutput.append("List already contains this train.\n");
+                return;
+            }
+        }
+        if(!Pattern.matches("[a-fA-F0-9]{14}", mac)){
+            consoleOutput.append("The MAC address is not valid. Make sure address has 14 characters and is in hexadecimal format.\n");
+            return;
+        }
         addressMap.put(name, mac);
-        
-        //((DefaultListModel)trainList.getModel()).insertElementAt(name, 0);
+        trainListModel.addElement(name);
     }
 
     /**
@@ -86,7 +105,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         trainList = new javax.swing.JList<>();
         addTrainButton = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        deleteTrainButton = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -141,11 +160,6 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         buttonGroup1.add(reverseRadioButton);
         reverseRadioButton.setText("Reverse");
 
-        trainList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Train 1", "Train 2" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane1.setViewportView(trainList);
 
         addTrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/plus.png"))); // NOI18N
@@ -158,7 +172,12 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/blue.png"))); // NOI18N
+        deleteTrainButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/trainguiregular/Resources/blue.png"))); // NOI18N
+        deleteTrainButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteTrainButtonActionPerformed(evt);
+            }
+        });
 
         sendButton.setText("Send");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -203,7 +222,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(deleteTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sendButton))
                 .addContainerGap())
         );
@@ -215,7 +234,7 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(deleteTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1))
                 .addGap(18, 18, 18)
@@ -340,6 +359,21 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_addTrainButtonActionPerformed
 
+    private void deleteTrainButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteTrainButtonActionPerformed
+        if(trainList.isSelectionEmpty()){
+            consoleOutput.append("No train selected.\n");
+            return;
+        }
+        int dialogButton = JOptionPane.YES_NO_OPTION;
+        int dialogResult = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this train?", "Warning", dialogButton);
+        if(dialogResult != 0) {
+          return;
+        } 
+        int index = trainList.getSelectedIndex();
+        addressMap.remove((String)trainListModel.get(index));
+        trainListModel.remove(index);
+    }//GEN-LAST:event_deleteTrainButtonActionPerformed
+
     public static byte[] hexStringToByteArray(String s) {
     int len = s.length();
     byte[] data = new byte[len / 2];
@@ -399,8 +433,8 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton brakeRadioButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextArea consoleOutput;
+    private javax.swing.JButton deleteTrainButton;
     private javax.swing.JRadioButton forwardRadioButton;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
