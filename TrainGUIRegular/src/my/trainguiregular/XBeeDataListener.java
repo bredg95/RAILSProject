@@ -22,11 +22,13 @@ public class XBeeDataListener implements IDataReceiveListener {
          TrainGUIRegularUI gui = null;
     
 	@Override
-	public final void dataReceived(XBeeMessage xbeeMessage) {
+	public final void dataReceived(XBeeMessage msg) {
+            
             if(gui != null) 
-                gui.appendToConsole(String.format("From %s >> %s | %s%n", xbeeMessage.getDevice().get64BitAddress(), 
-				HexUtils.prettyHexString(HexUtils.byteArrayToHexString(xbeeMessage.getData())), 
-				new String(xbeeMessage.getData())));
+                gui.dataReceived(msg.getDevice().get64BitAddress().getValue().toString(), msg.getData().toString());
+                //gui.appendToConsole(String.format("From %s >> %s | %s%n", xbeeMessage.getDevice().get64BitAddress(), 
+		//		HexUtils.prettyHexString(HexUtils.byteArrayToHexString(xbeeMessage.getData())), 
+		//		new String(xbeeMessage.getData())));
 	}
         /*
         Gives this listener the instance of the gui so that it can append received data to console

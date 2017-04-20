@@ -13,7 +13,7 @@ int in2_pin = 8;
 
 // For optical tie counter
 int tieCount = 0;
-int isBlack = -1;
+int isTie = false;
 int check = 0;
 int tiesPassed = 0;
 bool stopTieCounting = false;
@@ -47,7 +47,7 @@ void loop() {
     sendPositionData();
   }
   if(!stopTieCounting) {
-    getTieCounterValues();
+    runTieCounter();
   }
 }
 
@@ -100,7 +100,6 @@ void listenForData() {
 }
 
 void sendPositionData() {
-  byte i = 0;
   byte val = 0;
   byte checksum = 0;
   byte bytesRead = 0;
@@ -116,80 +115,81 @@ void sendPositionData() {
       while (bytesRead < 12) { // Read 10 digit code + 2 digit checksum
         if(RFID.available() > 0) {
           val = RFID.read();
-          
           // Append the first 10 bytes (0 to 9) to the raw tag value
           if (bytesRead < 12) {
             tagValue[bytesRead] = val;
           }
-          
           // Check if this is a header or stop byte before the 10 digit reading is complete
           if((val == 0x0D)||(val == 0x0A)||(val == 0x03)||(val == 0x02)) {
             break; // Stop reading
           }
-  
-          // Ascii/Hex conversion:
-          if ((val >= '0') && (val <= '9')) {
-            val = val - '0';
-          }
-          else if ((val >= 'A') && (val <= 'F')) {
-            val = 10 + val - 'A';
-          }
-          
-          // Every two hex-digits, add a byte to the code:
-          if (bytesRead & 1 == 1) {
-            // Make space for this hex-digit by shifting the previous digit 4 bits to the left
-            tagBytes[bytesRead >> 1] = (val | (tempByte << 4));
-            if (bytesRead >> 1 != 5) { // If we're at the checksum byte,
-              checksum ^= tagBytes[bytesRead >> 1]; // Calculate the checksum... (XOR)
-            }
-          } else {
-            tempByte = val; // Store the first hex digit first
-          }
-          
+//          // Ascii/Hex conversion:
+//          if ((val >= '0') && (val <= '9')) {
+//            val = val - '0';
+//          }
+//          else if ((val >= 'A') && (val <= 'F')) {
+//            val = 10 + val - 'A';
+//          }
+//          // Every two hex-digits, add a byte to the code:
+//          if (bytesRead & 1 == 1) {
+//            // Make space for this hex-digit by shifting the previous digit 4 bits to the left
+//            tagBytes[bytesRead >> 1] = (val | (tempByte << 4));
+//            if (bytesRead >> 1 != 5) { // If we're at the checksum byte,
+//              checksum ^= tagBytes[bytesRead >> 1]; // Calculate the checksum... (XOR)
+//            }
+//          } else {
+//            tempByte = val; // Store the first hex digit first
+//          }
           bytesRead++;
-         } // Ready to read next digit
+         }
+         else {
+          // If nothing to read might as well spend some time elsewhere real quick. May be unnecessary
+            runTieCounter();
+         }
       }
+      // Start listening to Xbee regardless of whether it successfully read in a tag
+      XBee.listen();
       // Send the result to the host connected via USB
-      if (bytesRead == 12) { // 12 digit read is complete
+      if (bytesRead == 12 && tiesPassed > 0) { // 12 digit read is complete
         tagValue[12] = '\0'; // Null-terminate the string
-        
-        // Show the raw tag value
-        XBee.print("Tag:");
-        XBee.write(tagValue);
-        XBee.listen();
+        String msg(tagValue);
+        msg = msg + "/" + tiesPassed;
+        XBee.print(msg);
       }
+      else {
+        String msg = "Tag read failed. Resetting tie count.";
+        XBee.print(msg);
+      }
+      tiesPassed = 0;
       bytesRead = 0;
     }
 }
 
-void getTieCounterValues() {
+void runTieCounter() {
    // Tie Counter
-  int value = 0;
-  tieCount++;
-  if (tieCount == 20) {
-    value = analogRead(A5);
-    tieCount = 0;
-  
-    if(value > 840 && isBlack != 1) {
-      check++;
-      if(check > 25) {
-        isBlack = 1;
-        tiesPassed = tiesPassed + 1;
-      }
-    }
-    else if(value <= 840 && isBlack == 0) {
-       check = 0;
-    }
-    else if(value <= 840 && isBlack != 0) {
-      isBlack = 0;
-    }
-    if(tiesPassed == tiesToPass) {
-      tiesPassed = 0;
-      XBee.print(tieMsg);
-      check = 0;
+  int value = analogRead(A5);
+
+  if(value > 800 && !isTie) {
+    check++;
+    if(check > 25) {
+      isTie = true;
+      tiesPassed = tiesPassed + 1;
     }
   }
+  else if(value <= 800 && !isTie) {
+     check = 0;
+  }
+  // The tie gives a more consistent value compared to the cork bed
+  else if(value <= 800 && isTie) {
+    isTie = false;
+  }
+//  if(tiesPassed == tiesToPass) {
+//    tiesPassed = 0;
+//    XBee.print(tieMsg);
+//    check = 0;
+//  }
 }
+
 void setRFIDListen()
 {
   RFID.listen();

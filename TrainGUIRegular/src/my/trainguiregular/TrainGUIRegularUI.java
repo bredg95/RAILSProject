@@ -230,13 +230,13 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(deleteTrainButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2)
@@ -424,8 +424,20 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     }
     private static TrainGUIRegularUI instance;
     
-    public final void appendToConsole(String output) {
-        consoleOutput.append(output);
+    public final void dataReceived(String addr, String data) {
+        String name = "";
+        Iterator it = addressMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            if(addr.compareTo((String)pair.getValue()) == 0) {
+                name = (String)pair.getKey();
+                break;
+            }
+        }
+        if(name.compareTo("") == 0) {
+            consoleOutput.append(String.format("Received data from unknown source: %s", data));
+        }
+        consoleOutput.append(String.format("%s: %s", name, data));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
