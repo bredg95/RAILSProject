@@ -25,7 +25,7 @@ public class XBeeDataListener implements IDataReceiveListener {
 	public final void dataReceived(XBeeMessage msg) {
             
             if(gui != null) 
-                gui.dataReceived(msg.getDevice().get64BitAddress().getValue().toString(), msg.getData().toString());
+                gui.dataReceived(msg.getDevice().get64BitAddress(), new String(msg.getData()));
                 //gui.appendToConsole(String.format("From %s >> %s | %s%n", xbeeMessage.getDevice().get64BitAddress(), 
 		//		HexUtils.prettyHexString(HexUtils.byteArrayToHexString(xbeeMessage.getData())), 
 		//		new String(xbeeMessage.getData())));

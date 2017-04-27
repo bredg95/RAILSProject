@@ -47,8 +47,8 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
         myDevice = new XBeeDevice(port, baud);
         XBeeDataListener listener = new XBeeDataListener();
         listener.setGUIInstance(this);
-        addressMap.put("Train 1", "13A2004105EE5A");
-        addressMap.put("Train 2", "13A200415B7AE5");
+        addressMap.put("Train 1", "0013A2004105EE5A");
+        addressMap.put("Train 2", "0013A200415B7AE5");
         try {
                 myDevice.open();
 
@@ -76,8 +76,8 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
                 return;
             }
         }
-        if(!Pattern.matches("[a-fA-F0-9]{14}", mac)){
-            consoleOutput.append("The MAC address is not valid. Make sure address has 14 characters and is in hexadecimal format.\n");
+        if(!Pattern.matches("[a-fA-F0-9]{16}", mac)){
+            consoleOutput.append("The MAC address is not valid. Make sure address has 16 characters and is in hexadecimal format.\n");
             return;
         }
         addressMap.put(name, mac);
@@ -424,20 +424,26 @@ public class TrainGUIRegularUI extends javax.swing.JFrame {
     }
     private static TrainGUIRegularUI instance;
     
-    public final void dataReceived(String addr, String data) {
+    public final void dataReceived(XBee64BitAddress addr, String data) {
         String name = "";
         Iterator it = addressMap.entrySet().iterator();
+        String address = addr.toString();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            if(addr.compareTo((String)pair.getValue()) == 0) {
+            if(address.compareTo((String)pair.getValue()) == 0) {
                 name = (String)pair.getKey();
                 break;
             }
         }
-        if(name.compareTo("") == 0) {
-            consoleOutput.append(String.format("Received data from unknown source: %s", data));
+        
+        if(name.length() == 0) {
+            consoleOutput.append(String.format("Received data from unknown source: %s\n", data));
+            return;
         }
-        consoleOutput.append(String.format("%s: %s", name, data));
+        int index = data.indexOf("/");
+        String tag = data.substring(0, index);
+        String ties = data.substring(index+1);
+        consoleOutput.append(String.format("%s: Tag: %s Ties: %s\n", name, tag, ties));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

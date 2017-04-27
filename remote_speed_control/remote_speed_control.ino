@@ -35,7 +35,6 @@ void setup() {
   XBee.begin(9600);
   RFID.begin(9600);
   XBee.listen();
-  Serial.begin(9600);
   
 }
 
@@ -46,9 +45,7 @@ void loop() {
   if(RFID.available() > 0) {
     sendPositionData();
   }
-  if(!stopTieCounting) {
-    runTieCounter();
-  }
+  runTieCounter();
 }
 
 void listenForData() {
@@ -123,23 +120,23 @@ void sendPositionData() {
           if((val == 0x0D)||(val == 0x0A)||(val == 0x03)||(val == 0x02)) {
             break; // Stop reading
           }
-//          // Ascii/Hex conversion:
-//          if ((val >= '0') && (val <= '9')) {
-//            val = val - '0';
-//          }
-//          else if ((val >= 'A') && (val <= 'F')) {
-//            val = 10 + val - 'A';
-//          }
-//          // Every two hex-digits, add a byte to the code:
-//          if (bytesRead & 1 == 1) {
-//            // Make space for this hex-digit by shifting the previous digit 4 bits to the left
-//            tagBytes[bytesRead >> 1] = (val | (tempByte << 4));
-//            if (bytesRead >> 1 != 5) { // If we're at the checksum byte,
-//              checksum ^= tagBytes[bytesRead >> 1]; // Calculate the checksum... (XOR)
-//            }
-//          } else {
-//            tempByte = val; // Store the first hex digit first
-//          }
+          // Ascii/Hex conversion:
+          if ((val >= '0') && (val <= '9')) {
+            val = val - '0';
+          }
+          else if ((val >= 'A') && (val <= 'F')) {
+            val = 10 + val - 'A';
+          }
+          // Every two hex-digits, add a byte to the code:
+          if (bytesRead & 1 == 1) {
+            // Make space for this hex-digit by shifting the previous digit 4 bits to the left
+            tagBytes[bytesRead >> 1] = (val | (tempByte << 4));
+            if (bytesRead >> 1 != 5) { // If we're at the checksum byte,
+              checksum ^= tagBytes[bytesRead >> 1]; // Calculate the checksum... (XOR)
+            }
+          } else {
+            tempByte = val; // Store the first hex digit first
+          }
           bytesRead++;
          }
          else {
@@ -147,40 +144,42 @@ void sendPositionData() {
             runTieCounter();
          }
       }
-      // Start listening to Xbee regardless of whether it successfully read in a tag
-      XBee.listen();
+      
       // Send the result to the host connected via USB
-      if (bytesRead == 12 && tiesPassed > 0) { // 12 digit read is complete
+      if (bytesRead == 12) { // 12 digit read is complete
+        // Start listening to Xbee regardless of whether it successfully read in a tag
+        XBee.listen();
         tagValue[12] = '\0'; // Null-terminate the string
-        String msg(tagValue);
-        msg = msg + "/" + tiesPassed;
-        XBee.print(msg);
+        XBee.write(tagValue);
+        XBee.print("/");
+        XBee.print(tiesPassed);
+        tiesPassed = 0;
       }
       else {
         String msg = "Tag read failed. Resetting tie count.";
         XBee.print(msg);
       }
-      tiesPassed = 0;
       bytesRead = 0;
     }
 }
-
+int avg = 0;
 void runTieCounter() {
    // Tie Counter
   int value = analogRead(A5);
-
-  if(value > 800 && !isTie) {
+  if(value > 970 && !isTie) {
     check++;
-    if(check > 25) {
+    if(check > 10) {
+      //if(avg > 970) {
       isTie = true;
-      tiesPassed = tiesPassed + 1;
+      tiesPassed++;
+      
     }
   }
-  else if(value <= 800 && !isTie) {
+  else if(value <= 960 && !isTie) {
      check = 0;
   }
   // The tie gives a more consistent value compared to the cork bed
-  else if(value <= 800 && isTie) {
+  else if(value <= 960 && isTie) {
     isTie = false;
   }
 //  if(tiesPassed == tiesToPass) {
